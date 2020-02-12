@@ -9,7 +9,7 @@ services:
       - redis # Ensures datadog container can connect to redis container
     image: datadog/agent:latest
     environment:
-      - DD_API_KEY=
+      - DD_API_KEY=${DD_KEY}
       - DD_APM_ENABLED=true
       - DD_LOGS_ENABLED=true
       - DD_INTEGRATION_NETTY_ENABLED=true
