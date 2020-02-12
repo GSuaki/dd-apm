@@ -1,0 +1,26 @@
+# Builder
+FROM mwendler/wget as builder
+
+RUN wget --no-check-certificate -O \
+    dd-java-agent.jar \
+    'https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.datadoghq&a=dd-java-agent&v=LATEST'
+
+# API
+FROM adoptopenjdk/openjdk11-openj9:x86_64-alpine-jre11u-nightly
+
+COPY . /app
+COPY --from=builder dd-java-agent.jar /app/dd-java-agent.jar
+
+COPY build/libs/code-drafts-*.jar /app/api.jar
+
+WORKDIR /app
+
+ENV DD_SERVICE_NAME=si-pdf-generator
+ENV DD_AGENT_HOST=datadog
+ENV DD_AGENT_PORT=8126
+ENV DD_TRACE_AGENT_PORT=8126
+ENV DD_INTEGRATION_NETTY_ENABLED=true
+ENV DD_INTEGRATION_SPRING_WEBFLUX_ENABLED=true
+
+#CMD java -server -jar api.jar
+CMD java -server -javaagent:dd-java-agent.jar -jar api.jar

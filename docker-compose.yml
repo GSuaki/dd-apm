@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  redis:
+    image: redis
+
+  datadog:
+    links:
+      - redis # Ensures datadog container can connect to redis container
+    image: datadog/agent:latest
+    environment:
+      - DD_API_KEY=
+      - DD_APM_ENABLED=true
+      - DD_LOGS_ENABLED=true
+      - DD_INTEGRATION_NETTY_ENABLED=true
+      - DD_INTEGRATION_SPRING_WEBFLUX_ENABLED=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /proc/mounts:/host/proc/mounts:ro
+      - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
+
+  api:
+    links:
+      - datadog
+    image: webflux:latest
+    ports:
+      - 8080:8080
